@@ -26,6 +26,7 @@
       border-bottom:18px solid transparent;
       border-left:30px solid #fff;
       pointer-events:none;
+      opacity:.9;
     }
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .is-playing .thumb,.is-playing .play{opacity:0}
@@ -64,6 +65,11 @@
         <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922966/TXT_3_l7kfvf.jpg"><div class="play"></div>
       </div></div>
 
+      <!-- ✅ 마지막 슬라이드 복구 -->
+      <div class="swiper-slide"><div class="frame" data-video="ANRk61jJfAQ">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765926235/ZEROBASEONE_%EC%A0%9C%EB%A1%9C%EB%B2%A0%EC%9D%B4%EC%8A%A4%EC%9B%90_The_4th_Mini_Album____BAD_Film_2_dxmdpi.jpg"><div class="play"></div>
+      </div></div>
+
     </div>
   </div>
 </div>
@@ -76,16 +82,13 @@ setVh();window.addEventListener('resize',setVh)
 const swiper = new Swiper('.swiper', {
   direction: 'vertical',
   slidesPerView: 2,
-
-  // ✅ 점프 방지 핵심 세팅
   mousewheel: {
     forceToAxis: true,
     releaseOnEdges: false,
-    sensitivity: 0.6,          // 트랙패드 과민 반응 완화
-    thresholdDelta: 30,        // 작은 스크롤은 무시 (점프 방지)
-    thresholdTime: 250         // 연속 입력 묶음 방지
+    sensitivity: 0.6,
+    thresholdDelta: 30,
+    thresholdTime: 250
   },
-
   speed: 280,
   allowTouchMove: true,
 });
@@ -112,6 +115,8 @@ frames.forEach(f=>{
     stopOthers(f)
     const i=document.createElement('iframe')
     i.src=`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`
+    i.allow='autoplay; encrypted-media; picture-in-picture'
+    i.allowFullscreen=true
     f.appendChild(i)
     f.classList.add('is-playing')
     notify(id)
