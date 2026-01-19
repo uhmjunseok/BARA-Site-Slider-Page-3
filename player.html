@@ -6,153 +6,106 @@
   <title>BARA Player</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
-    :root { --vh: 1vh; }
-    html, body { margin:0; padding:0; height:100%; background:transparent; overflow:hidden; }
-    .app { width:100%; height:calc(var(--vh) * 100); background:transparent; overflow:hidden; }
-    .swiper { width:100%; height:100%; }
-    .swiper-slide{ height:50% !important; display:flex; align-items:center; justify-content:center; background:transparent; }
+    :root{--vh:1vh}
+    html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+    .app{height:calc(var(--vh)*100)}
+    .swiper{height:100%}
+    .swiper-slide{height:50%!important;display:flex;align-items:center;justify-content:center}
 
     .frame{
       position:relative;
       height:100%;
       aspect-ratio:16/9;
-      width:auto;
-      max-width:100%;
-      overflow:hidden;
       cursor:pointer;
-      background:transparent;
     }
-    .thumb{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover; object-position:center;
-      display:block; z-index:1;
-    }
+    .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     .play{
-      position:absolute; inset:0; margin:auto;
-      width:0; height:0;
+      position:absolute;inset:0;margin:auto;
+      width:0;height:0;
       border-top:18px solid transparent;
       border-bottom:18px solid transparent;
       border-left:30px solid #fff;
-      z-index:2; pointer-events:none; opacity:.9;
     }
-    .yt{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      border:0; z-index:3;
-      background:transparent;
-    }
-    .is-playing .thumb, .is-playing .play{ opacity:0; }
+    iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .is-playing .thumb,.is-playing .play{opacity:0}
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="swiper">
-      <div class="swiper-wrapper">
+<div class="app">
+  <div class="swiper">
+    <div class="swiper-wrapper">
 
-        <div class="swiper-slide"><div class="frame" data-video="5kwdU60Xqh8">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910009/aespa_1_clfpii.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="5kwdU60Xqh8">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910009/aespa_1_clfpii.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="YoARK1ZGfiw">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_3_syyxob.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="YoARK1ZGfiw">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_3_syyxob.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="oUH3ywua_0w">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_2_i58fal.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="oUH3ywua_0w">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_2_i58fal.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="D7vNuz1WVxU">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765920114/IRENE_SEULGI.jpg_uwwnye.webp" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="D7vNuz1WVxU">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765920114/IRENE_SEULGI.jpg_uwwnye.webp"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="FZJLu2uHEtM">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_1_cgtu2u.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="FZJLu2uHEtM">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_1_cgtu2u.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="S-uJLjxkKS4">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_2_z4t4ny.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="S-uJLjxkKS4">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_2_z4t4ny.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="ZzQcUe0_XFQ">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922966/TXT_3_l7kfvf.jpg" alt=""><div class="play"></div>
-        </div></div>
+      <div class="swiper-slide"><div class="frame" data-video="ZzQcUe0_XFQ">
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922966/TXT_3_l7kfvf.jpg"><div class="play"></div>
+      </div></div>
 
-        <div class="swiper-slide"><div class="frame" data-video="ANRk61jJfAQ">
-          <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765926235/ZEROBASEONE_%EC%A0%9C%EB%A1%9C%EB%B2%A0%EC%9D%B4%EC%8A%A4%EC%9B%90_The_4th_Mini_Album____BAD_Film_2_dxmdpi.jpg" alt=""><div class="play"></div>
-        </div></div>
-
-      </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script>
-    function setVh(){ document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); }
-    setVh(); window.addEventListener('resize', setVh);
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px')}
+setVh();window.addEventListener('resize',setVh)
 
-    const swiper = new Swiper('.swiper', {
-      direction: 'vertical',
-      slidesPerView: 2,
-      mousewheel: true,
-      threshold: 10,
-      resistanceRatio: 0.85
-    });
+const swiper=new Swiper('.swiper',{direction:'vertical',slidesPerView:2,mousewheel:true})
+const frames=[...document.querySelectorAll('.frame')]
 
-    const frames = Array.from(document.querySelectorAll('.frame'));
-
-    function stopOthers(current){
-      frames.forEach(f => {
-        if (f !== current){
-          f.classList.remove('is-playing');
-          const iframe = f.querySelector('iframe');
-          if (iframe) iframe.remove();
-        }
-      });
+function stopOthers(c){
+  frames.forEach(f=>{
+    if(f!==c){
+      f.classList.remove('is-playing')
+      const i=f.querySelector('iframe');if(i)i.remove()
     }
+  })
+}
 
-    function notifyParent(videoId){
-      // ✅ Readymag(부모)로 전달
-      try {
-        window.parent.postMessage({ type:'BARA_VIDEO_SELECT', videoId }, 'https://barasounds.com');
-      } catch(e) {}
-      try {
-        window.parent.postMessage({ type:'BARA_VIDEO_SELECT', videoId }, 'https://www.barasounds.com');
-      } catch(e) {}
-    }
+function notify(videoId){
+  // 🔥 테스트용: 무조건 보냄
+  window.parent.postMessage({type:'BARA_VIDEO_SELECT',videoId},'*')
+}
 
-    function play(frame){
-      if (frame.classList.contains('is-playing')) return;
-      const id = frame.dataset.video;
-      if (!id) return;
+frames.forEach(f=>{
+  f.addEventListener('click',()=>{
+    if(f.classList.contains('is-playing'))return
+    const id=f.dataset.video
+    stopOthers(f)
+    const i=document.createElement('iframe')
+    i.src=`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`
+    f.appendChild(i)
+    f.classList.add('is-playing')
+    notify(id)
+  })
+})
 
-      stopOthers(frame);
-
-      const iframe = document.createElement('iframe');
-      iframe.className = 'yt';
-      iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
-      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
-      iframe.allowFullscreen = true;
-
-      frame.appendChild(iframe);
-      frame.classList.add('is-playing');
-
-      notifyParent(id);
-    }
-
-    frames.forEach(f => f.addEventListener('click', () => play(f)));
-
-    swiper.on('slideChange', () => {
-      const slide = swiper.slides[swiper.activeIndex];
-      const frame = slide && slide.querySelector('.frame[data-video]');
-      if (frame && frame.dataset.video) notifyParent(frame.dataset.video);
-    });
-
-    // 초기 1회 전달
-    (function(){
-      const first = document.querySelector('.frame[data-video]');
-      if (first && first.dataset.video) notifyParent(first.dataset.video);
-    })();
-  </script>
+swiper.on('slideChange',()=>{
+  const f=swiper.slides[swiper.activeIndex].querySelector('.frame')
+  if(f) notify(f.dataset.video)
+})
+</script>
 </body>
 </html>
