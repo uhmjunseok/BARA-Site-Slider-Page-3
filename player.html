@@ -25,6 +25,7 @@
       border-top:18px solid transparent;
       border-bottom:18px solid transparent;
       border-left:30px solid #fff;
+      pointer-events:none;
     }
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .is-playing .thumb,.is-playing .play{opacity:0}
@@ -72,7 +73,23 @@
 function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px')}
 setVh();window.addEventListener('resize',setVh)
 
-const swiper=new Swiper('.swiper',{direction:'vertical',slidesPerView:2,mousewheel:true})
+const swiper = new Swiper('.swiper', {
+  direction: 'vertical',
+  slidesPerView: 2,
+
+  // ✅ 점프 방지 핵심 세팅
+  mousewheel: {
+    forceToAxis: true,
+    releaseOnEdges: false,
+    sensitivity: 0.6,          // 트랙패드 과민 반응 완화
+    thresholdDelta: 30,        // 작은 스크롤은 무시 (점프 방지)
+    thresholdTime: 250         // 연속 입력 묶음 방지
+  },
+
+  speed: 280,
+  allowTouchMove: true,
+});
+
 const frames=[...document.querySelectorAll('.frame')]
 
 function stopOthers(c){
@@ -85,7 +102,6 @@ function stopOthers(c){
 }
 
 function notify(videoId){
-  // 🔥 테스트용: 무조건 보냄
   window.parent.postMessage({type:'BARA_VIDEO_SELECT',videoId},'*')
 }
 
