@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BARA Panel</title>
+  <style>
+    html, body{
+      margin:0; padding:0;
+      height:100%;
+      background:transparent;
+      overflow:hidden;
+      font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
+      font-size:15px;
+      letter-spacing:-0.3px;
+      line-height:1.2;
+      color:#111;
+    }
+    .root{ height:100%; padding:24px; box-sizing:border-box; background:transparent; }
+    .panel{ display:none; }
+    .panel.is-active{ display:block; }
+    .t-fixed{ margin-bottom:14px; }
+    .t-dynamic{ margin-bottom:14px; }
+    .t-meta{ opacity:.8; }
+  </style>
+</head>
+<body>
+  <div class="root" data-bara="panel">
+    <div class="panel" data-panel="aespa">
+      <div class="t-fixed">
+        aespa<br>
+        THE 1ST FULL ALBUM [ARMAGEDDON]<br>
+        FIND THE AUTHENTIC
+      </div>
+      <div class="t-dynamic" id="members">ALL</div>
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
+    </div>
+
+    <div class="panel" data-panel="irene">
+      <div class="t-fixed">
+        IRENE &amp; SEULGI<br>
+        THE 2ND MINI ALBUM [TILT]<br>
+        BRAND FILM PT.3
+      </div>
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
+    </div>
+
+    <div class="panel" data-panel="txt1">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'LIGHT'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+
+    <div class="panel" data-panel="txt2">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        THE STAR CHAPTER: SANCTUARY<br>
+        CONCEPT CLIP 'SAVIOR'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+
+    <div class="panel" data-panel="txt3">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'ETHEREAL'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const AESPA_MAP = {
+      '5kwdU60Xqh8': 'ALL',
+      'YoARK1ZGfiw': 'KARINA',
+      'oUH3ywua_0w': 'GISELLE'
+    };
+
+    const VIDEO_TO_PANEL = {
+      'D7vNuz1WVxU': 'irene',
+      'FZJLu2uHEtM': 'txt1',
+      'S-uJLjxkKS4': 'txt2',
+      'ZzQcUe0_XFQ': 'txt3',
+    };
+
+    const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
+    const membersEl = document.querySelector('#members');
+
+    function showPanel(key){
+      panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+    }
+
+    function apply(videoId){
+      if (VIDEO_TO_PANEL[videoId]){
+        showPanel(VIDEO_TO_PANEL[videoId]);
+        if (membersEl) membersEl.textContent = '';
+        return;
+      }
+      if (AESPA_MAP[videoId]){
+        showPanel('aespa');
+        if (membersEl) membersEl.textContent = AESPA_MAP[videoId];
+        return;
+      }
+      showPanel('aespa');
+      if (membersEl) membersEl.textContent = 'ALL';
+    }
+
+    // ✅ Readymag(부모)로부터 전달받음
+    window.addEventListener('message', (ev) => {
+      if (ev.origin !== 'https://barasounds.com' && ev.origin !== 'https://www.barasounds.com') return;
+      const data = ev.data;
+      if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
+      apply(data.videoId);
+    });
+
+    // 초기
+    showPanel('aespa');
+    if (membersEl) membersEl.textContent = 'ALL';
+  </script>
+</body>
+</html>

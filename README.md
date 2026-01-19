@@ -1,1 +1,0 @@
-# BARA-Site-Slider-Page-3
