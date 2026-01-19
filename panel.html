@@ -4,23 +4,53 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>BARA Panel</title>
+
   <style>
-    html,body{
-      margin:0;padding:0;height:100%;
-      background:transparent;overflow:hidden;
+    html, body{
+      margin:0;
+      padding:0;
+      height:100%;
+      background:transparent;
+      overflow:hidden;
+
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
-      font-size:15px;letter-spacing:-0.3px;line-height:1.2;color:#111;
+      font-size:15px;
+      letter-spacing:-0.3px;
+      line-height:1.2;
+      color:#111;
     }
-    .root{height:100%;padding:24px;box-sizing:border-box;background:transparent}
-    .panel{display:none}
-    .panel.is-active{display:block}
-    .t-fixed{margin-bottom:14px}
-    .t-dynamic{margin-bottom:14px}
-    .t-meta{opacity:.8}
+
+    .root{
+      height:100%;
+      padding:24px;
+      box-sizing:border-box;
+      background:transparent;
+    }
+
+    .panel{
+      display:none;
+    }
+    .panel.is-active{
+      display:block;
+    }
+
+    .t-fixed{ margin-bottom:14px; }
+    .t-dynamic{ margin-bottom:14px; }
+    .t-meta{ opacity:.8; }
+
+    /* ✅ Safari에서만 1px 보정 */
+    @supports (-webkit-touch-callout: none) {
+      html, body{
+        font-size:14px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="root">
+
+    <!-- AESPA -->
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -28,28 +58,64 @@
         FIND THE AUTHENTIC
       </div>
       <div class="t-dynamic" id="members">ALL</div>
-      <div class="t-meta">2024<br>SM ENTERTAINMENT</div>
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
     </div>
 
+    <!-- IRENE & SEULGI -->
     <div class="panel" data-panel="irene">
-      <div class="t-fixed">IRENE &amp; SEULGI<br>THE 2ND MINI ALBUM [TILT]<br>BRAND FILM PT.3</div>
-      <div class="t-meta">2024<br>SM ENTERTAINMENT</div>
+      <div class="t-fixed">
+        IRENE &amp; SEULGI<br>
+        THE 2ND MINI ALBUM [TILT]<br>
+        BRAND FILM PT.3
+      </div>
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
     </div>
 
+    <!-- TXT 1 -->
     <div class="panel" data-panel="txt1">
-      <div class="t-fixed">TXT (TOMORROW X TOGETHER)<br>MINISODE 3: TOMORROW<br>CONCEPT CLIP 'LIGHT'</div>
-      <div class="t-meta">2024<br>BIGHIT MUSIC</div>
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'LIGHT'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
     </div>
 
+    <!-- TXT 2 -->
     <div class="panel" data-panel="txt2">
-      <div class="t-fixed">TXT (TOMORROW X TOGETHER)<br>THE STAR CHAPTER: SANCTUARY<br>CONCEPT CLIP 'SAVIOR'</div>
-      <div class="t-meta">2024<br>BIGHIT MUSIC</div>
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        THE STAR CHAPTER: SANCTUARY<br>
+        CONCEPT CLIP 'SAVIOR'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
     </div>
 
+    <!-- TXT 3 -->
     <div class="panel" data-panel="txt3">
-      <div class="t-fixed">TXT (TOMORROW X TOGETHER)<br>MINISODE 3: TOMORROW<br>CONCEPT CLIP 'ETHEREAL'</div>
-      <div class="t-meta">2024<br>BIGHIT MUSIC</div>
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'ETHEREAL'
+      </div>
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
     </div>
+
   </div>
 
 <script>
@@ -65,29 +131,32 @@
     'FZJLu2uHEtM': 'txt1',
     'S-uJLjxkKS4': 'txt2',
     'ZzQcUe0_XFQ': 'txt3',
-    'ANRk61jJfAQ': 'aespa' // 필요하면 별도 패널로 바꿔도 됨
+    'ANRk61jJfAQ': 'aespa'
   };
 
   const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
   const membersEl = document.getElementById('members');
 
   function showPanel(key){
-    panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+    panels.forEach(p=>{
+      p.classList.toggle('is-active', p.dataset.panel === key);
+    });
   }
 
   function apply(videoId){
-    if (VIDEO_TO_PANEL[videoId]) {
+    if (VIDEO_TO_PANEL[videoId]){
       const key = VIDEO_TO_PANEL[videoId];
       showPanel(key);
-      if (key === 'aespa' && membersEl) {
+
+      if (key === 'aespa' && membersEl){
         membersEl.textContent = AESPA_MAP[videoId] || 'ALL';
-      } else if (membersEl) {
+      } else if (membersEl){
         membersEl.textContent = '';
       }
       return;
     }
 
-    if (AESPA_MAP[videoId]) {
+    if (AESPA_MAP[videoId]){
       showPanel('aespa');
       if (membersEl) membersEl.textContent = AESPA_MAP[videoId];
       return;
@@ -97,11 +166,10 @@
     if (membersEl) membersEl.textContent = 'ALL';
   }
 
-  // ✅ origin 제한 없이 받음(안전하게 먼저 살리고, 나중에 잠금)
   window.addEventListener('message', function(ev){
-    const d = ev.data;
-    if (!d || d.type !== 'BARA_VIDEO_SELECT') return;
-    apply(d.videoId);
+    const data = ev.data;
+    if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
+    apply(data.videoId);
   });
 
   showPanel('aespa');
