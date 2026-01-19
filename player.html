@@ -24,35 +24,35 @@
     <div class="swiper-wrapper">
 
       <div class="swiper-slide"><div class="frame" data-video="5kwdU60Xqh8">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910009/aespa_1_clfpii.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910009/aespa_1_clfpii.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="YoARK1ZGfiw">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_3_syyxob.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_3_syyxob.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="oUH3ywua_0w">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_2_i58fal.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765910010/aespa_2_i58fal.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="D7vNuz1WVxU">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765920114/IRENE_SEULGI.jpg_uwwnye.webp"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765920114/IRENE_SEULGI.jpg_uwwnye.webp" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="FZJLu2uHEtM">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_1_cgtu2u.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_1_cgtu2u.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="S-uJLjxkKS4">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_2_z4t4ny.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922965/TXT_2_z4t4ny.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="ZzQcUe0_XFQ">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922966/TXT_3_l7kfvf.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765922966/TXT_3_l7kfvf.jpg" alt=""><div class="play"></div>
       </div></div>
 
       <div class="swiper-slide"><div class="frame" data-video="ANRk61jJfAQ">
-        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765926235/ZEROBASEONE_%EC%A0%9C%EB%A1%9C%EB%B2%A0%EC%9D%B4%EC%8A%A4%EC%9B%90_The_4th_Mini_Album____BAD_Film_2_dxmdpi.jpg"><div class="play"></div>
+        <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765926235/ZEROBASEONE_%EC%A0%9C%EB%A1%9C%EB%B2%A0%EC%9D%B4%EC%8A%A4%EC%9B%90_The_4th_Mini_Album____BAD_Film_2_dxmdpi.jpg" alt=""><div class="play"></div>
       </div></div>
 
     </div>
@@ -84,7 +84,7 @@ function stopOthers(c){
 
 function notify(videoId){
   const msg = { type:'BARA_VIDEO_SELECT', videoId };
-  // ✅ 핵심: 최상단으로 보냄 (Readymag가 iframe을 한 번 더 감싸도 통과)
+  // ✅ 핵심: Readymag가 iframe을 감싸도 최상단(window.top)으로 올림
   try { window.top.postMessage(msg, '*'); } catch(e) {}
 }
 
