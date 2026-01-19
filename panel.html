@@ -15,6 +15,11 @@
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
       font-size:15px;
+
+      /* 🔒 Readymag + Safari/Chrome 크기 고정 핵심 */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+
       letter-spacing:-0.3px;
       line-height:1.2;
       color:#111;
@@ -27,30 +32,18 @@
       background:transparent;
     }
 
-    .panel{
-      display:none;
-    }
-    .panel.is-active{
-      display:block;
-    }
+    .panel{ display:none; }
+    .panel.is-active{ display:block; }
 
     .t-fixed{ margin-bottom:14px; }
     .t-dynamic{ margin-bottom:14px; }
     .t-meta{ opacity:.8; }
-
-    /* ✅ Safari에서만 1px 보정 */
-    @supports (-webkit-touch-callout: none) {
-      html, body{
-        font-size:14px;
-      }
-    }
   </style>
 </head>
 
 <body>
   <div class="root">
 
-    <!-- AESPA -->
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -64,7 +57,6 @@
       </div>
     </div>
 
-    <!-- IRENE & SEULGI -->
     <div class="panel" data-panel="irene">
       <div class="t-fixed">
         IRENE &amp; SEULGI<br>
@@ -77,7 +69,6 @@
       </div>
     </div>
 
-    <!-- TXT 1 -->
     <div class="panel" data-panel="txt1">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
@@ -90,7 +81,6 @@
       </div>
     </div>
 
-    <!-- TXT 2 -->
     <div class="panel" data-panel="txt2">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
@@ -103,7 +93,6 @@
       </div>
     </div>
 
-    <!-- TXT 3 -->
     <div class="panel" data-panel="txt3">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
@@ -147,7 +136,6 @@
     if (VIDEO_TO_PANEL[videoId]){
       const key = VIDEO_TO_PANEL[videoId];
       showPanel(key);
-
       if (key === 'aespa' && membersEl){
         membersEl.textContent = AESPA_MAP[videoId] || 'ALL';
       } else if (membersEl){
@@ -171,9 +159,6 @@
     if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
     apply(data.videoId);
   });
-
-  showPanel('aespa');
-  if (membersEl) membersEl.textContent = 'ALL';
 })();
 </script>
 </body>
