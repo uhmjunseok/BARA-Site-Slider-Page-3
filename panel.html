@@ -1,9 +1,10 @@
+<!-- ✅ Page 3: panel.html 전체 교체본 -->
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>BARA Panel</title>
+  <title>MICROCOSM Panel (Page 3)</title>
 
   <style>
     html, body{
@@ -16,9 +17,8 @@
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
       font-size:15px;
 
-      /* 🔒 Readymag + Safari/Chrome 크기 고정 핵심 */
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
 
       letter-spacing:-0.3px;
       line-height:1.2;
@@ -32,134 +32,91 @@
       background:transparent;
     }
 
-    .panel{ display:none; }
-    .panel.is-active{ display:block; }
+    .mt-title{ margin-bottom:6px; }
+    .mt-sub{ margin-bottom:14px; }
 
-    .t-fixed{ margin-bottom:14px; }
-    .t-dynamic{ margin-bottom:14px; }
-    .t-meta{ opacity:.8; }
+    .mt-desc{
+      margin-bottom:14px;
+      max-width:60ch;
+
+      /* ✅ 길면 자동 줄바꿈 */
+      white-space:normal;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+
+    .mt-year{ opacity:.8; }
   </style>
 </head>
 
 <body>
   <div class="root">
-
-    <div class="panel is-active" data-panel="aespa">
-      <div class="t-fixed">
-        aespa<br>
-        THE 1ST FULL ALBUM [ARMAGEDDON]<br>
-        FIND THE AUTHENTIC
-      </div>
-      <div class="t-dynamic" id="members">ALL</div>
-      <div class="t-meta">
-        2024<br>
-        SM ENTERTAINMENT
-      </div>
-    </div>
-
-    <div class="panel" data-panel="irene">
-      <div class="t-fixed">
-        IRENE &amp; SEULGI<br>
-        THE 2ND MINI ALBUM [TILT]<br>
-        BRAND FILM PT.3
-      </div>
-      <div class="t-meta">
-        2024<br>
-        SM ENTERTAINMENT
-      </div>
-    </div>
-
-    <div class="panel" data-panel="txt1">
-      <div class="t-fixed">
-        TXT (TOMORROW X TOGETHER)<br>
-        MINISODE 3: TOMORROW<br>
-        CONCEPT CLIP 'LIGHT'
-      </div>
-      <div class="t-meta">
-        2024<br>
-        BIGHIT MUSIC
-      </div>
-    </div>
-
-    <div class="panel" data-panel="txt2">
-      <div class="t-fixed">
-        TXT (TOMORROW X TOGETHER)<br>
-        THE STAR CHAPTER: SANCTUARY<br>
-        CONCEPT CLIP 'SAVIOR'
-      </div>
-      <div class="t-meta">
-        2024<br>
-        BIGHIT MUSIC
-      </div>
-    </div>
-
-    <div class="panel" data-panel="txt3">
-      <div class="t-fixed">
-        TXT (TOMORROW X TOGETHER)<br>
-        MINISODE 3: TOMORROW<br>
-        CONCEPT CLIP 'ETHEREAL'
-      </div>
-      <div class="t-meta">
-        2024<br>
-        BIGHIT MUSIC
-      </div>
-    </div>
-
+    <div class="mt-title" id="mtTitle">MICROCOSM</div>
+    <div class="mt-sub" id="mtSub">A compact study of sound, rhythm, and presence.</div>
+    <div class="mt-desc" id="mtDesc"></div>
+    <div class="mt-year" id="mtYear">2025</div>
   </div>
 
-<script>
-(function(){
-  const AESPA_MAP = {
-    '5kwdU60Xqh8': 'ALL',
-    'YoARK1ZGfiw': 'KARINA',
-    'oUH3ywua_0w': 'GISELLE'
-  };
-
-  const VIDEO_TO_PANEL = {
-    'D7vNuz1WVxU': 'irene',
-    'FZJLu2uHEtM': 'txt1',
-    'S-uJLjxkKS4': 'txt2',
-    'ZzQcUe0_XFQ': 'txt3',
-    'ANRk61jJfAQ': 'aespa'
-  };
-
-  const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
-  const membersEl = document.getElementById('members');
-
-  function showPanel(key){
-    panels.forEach(p=>{
-      p.classList.toggle('is-active', p.dataset.panel === key);
-    });
-  }
-
-  function apply(videoId){
-    if (VIDEO_TO_PANEL[videoId]){
-      const key = VIDEO_TO_PANEL[videoId];
-      showPanel(key);
-      if (key === 'aespa' && membersEl){
-        membersEl.textContent = AESPA_MAP[videoId] || 'ALL';
-      } else if (membersEl){
-        membersEl.textContent = '';
+  <script>
+  (function(){
+    const DATA = {
+      /* ✅ Page 3 MICROCOSM IDs */
+      'DRPC2Ba7i7E': {
+        title:'MICROCOSM I',
+        sub:'RHYTHM',
+        desc:'A form appears, holds, and subtly disturbs the stillness of an office interior.',
+        year:'2025'
+      },
+      'Rp0HBSVz4hg': {
+        title:'MICROCOSM II',
+        sub:'INTRUSION',
+        desc:'Particles drift and cluster, exposing surface and texture through slow accumulation.',
+        year:'2025'
+      },
+      'EBvlq_t6CHA': {
+        title:'MICROCOSM III',
+        sub:'SPREAD',
+        desc:'Elements expand and overlap, producing a continuous yet unstable spatial flow.',
+        year:'2025'
+      },
+      'TldWk1-rzIA': {
+        title:'MICROCOSM IV',
+        sub:'DISRUPTION',
+        desc:'Irregular movements interrupt the system, leaving residual patterns and breaks in rhythm.',
+        year:'2025'
       }
-      return;
+    };
+
+    const titleEl = document.getElementById('mtTitle');
+    const subEl   = document.getElementById('mtSub');
+    const descEl  = document.getElementById('mtDesc');
+    const yearEl  = document.getElementById('mtYear');
+    if (!titleEl || !subEl || !descEl || !yearEl) return;
+
+    function setDefault(){
+      titleEl.textContent = 'MICROCOSM';
+      subEl.textContent   = 'A compact study of sound, rhythm, and presence.';
+      descEl.textContent  = '';
+      yearEl.textContent  = '2025';
     }
 
-    if (AESPA_MAP[videoId]){
-      showPanel('aespa');
-      if (membersEl) membersEl.textContent = AESPA_MAP[videoId];
-      return;
+    function apply(videoId){
+      const d = DATA[videoId];
+      if (!d){ setDefault(); return; }
+      titleEl.textContent = d.title;
+      subEl.textContent   = d.sub;
+      descEl.textContent  = d.desc;
+      yearEl.textContent  = d.year || '2025';
     }
 
-    showPanel('aespa');
-    if (membersEl) membersEl.textContent = 'ALL';
-  }
+    window.addEventListener('message', function(ev){
+      const data = ev.data;
+      if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
+      apply(data.videoId);
+    });
 
-  window.addEventListener('message', function(ev){
-    const data = ev.data;
-    if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
-    apply(data.videoId);
-  });
-})();
-</script>
+    setDefault();
+  })();
+  </script>
 </body>
 </html>
