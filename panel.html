@@ -25,9 +25,7 @@
     }
 
     /* ✅ iOS / iframe 글자 튐 완전 차단 */
-    *{
-      max-height:1000000px;
-    }
+    *{ max-height:1000000px; }
 
     .root{
       height:100%;
@@ -172,16 +170,28 @@
 
   /* ✅ 패널 READY 신호 (연동 안정화 핵심) */
   function ready(){
-    try{
-      window.top.postMessage({ type:'BARA_PANEL_READY' }, '*');
-    }catch(e){}
+    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
+  }
+
+  // ✅ ready를 “확률”이 아니라 “확정”으로: 문서가 보일 때/포커스 때도 재송신
+  function kickReadyBurst(){
+    ready();
+    setTimeout(ready, 60);
+    setTimeout(ready, 180);
+    setTimeout(ready, 420);
+    setTimeout(ready, 900);
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
+
     if (data.type === 'BARA_VIDEO_SELECT'){
       apply(data.videoId);
+    }
+    // (선택) 플레이어가 부팅 확인을 보내는 경우 대비
+    if (data.type === 'BARA_PLAYER_BOOT'){
+      kickReadyBurst();
     }
   });
 
@@ -190,11 +200,13 @@
   if (membersEl) membersEl.textContent = 'ALL';
 
   /* READY 여러 번 송신 (Readymag / iframe 지연 대응) */
-  ready();
-  setTimeout(ready, 60);
-  setTimeout(ready, 180);
-  window.addEventListener('load', ready);
-  window.addEventListener('pageshow', ready);
+  kickReadyBurst();
+  window.addEventListener('load', kickReadyBurst);
+  window.addEventListener('pageshow', kickReadyBurst);
+  window.addEventListener('focus', kickReadyBurst);
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) kickReadyBurst();
+  });
 })();
 </script>
 </body>
