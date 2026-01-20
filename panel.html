@@ -3,8 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
-  <!-- ✅ 탭/미리보기에서 'MICROCOSM' 같은 이름 뜨는 문제 방지 -->
   <title>BARA Panel</title>
 
   <style>
@@ -26,10 +24,8 @@
       color:#111;
     }
 
-    /* ✅ (추가) Safari/Chrome 간헐적 텍스트 오토사이즈/부스팅 차단 */
-    *{
-      max-height:1000000px;
-    }
+    /* ✅ iOS/iframe 글자 튐 방지 */
+    *{ max-height:1000000px; }
 
     .root{
       height:100%;
@@ -37,7 +33,6 @@
       box-sizing:border-box;
       background:transparent;
 
-      /* ✅ 모바일/좁은 박스에서 자동 줄바꿈 */
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
@@ -55,86 +50,73 @@
 <body>
   <div class="root">
 
-    <!-- AESPA -->
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
         THE 1ST FULL ALBUM [ARMAGEDDON]<br>
         FIND THE AUTHENTIC
       </div>
-
       <div class="t-dynamic" id="baraMembers">ALL</div>
-
       <div class="t-meta">
         2024<br>
         SM ENTERTAINMENT
       </div>
     </div>
 
-    <!-- IRENE & SEULGI -->
     <div class="panel" data-panel="irene">
       <div class="t-fixed">
         IRENE &amp; SEULGI<br>
         THE 2ND MINI ALBUM [TILT]<br>
         BRAND FILM PT.3
       </div>
-
       <div class="t-meta">
         2024<br>
         SM ENTERTAINMENT
       </div>
     </div>
 
-    <!-- TXT 1 -->
     <div class="panel" data-panel="txt1">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
         MINISODE 3: TOMORROW<br>
         CONCEPT CLIP 'LIGHT'
       </div>
-
       <div class="t-meta">
         2024<br>
         BIGHIT MUSIC
       </div>
     </div>
 
-    <!-- TXT 2 -->
     <div class="panel" data-panel="txt2">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
         THE STAR CHAPTER: SANCTUARY<br>
         CONCEPT CLIP 'SAVIOR'
       </div>
-
       <div class="t-meta">
         2024<br>
         BIGHIT MUSIC
       </div>
     </div>
 
-    <!-- TXT 3 -->
     <div class="panel" data-panel="txt3">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
         MINISODE 3: TOMORROW<br>
         CONCEPT CLIP 'ETHEREAL'
       </div>
-
       <div class="t-meta">
         2024<br>
         BIGHIT MUSIC
       </div>
     </div>
 
-    <!-- ZB1 (BAD Film) -->
     <div class="panel" data-panel="zb1">
       <div class="t-fixed">
         ZEROBASEONE<br>
         THE 4TH MINI ALBUM<br>
         'BAD' FILM
       </div>
-
       <div class="t-meta">
         2024<br>
         WAKEONE
@@ -149,34 +131,23 @@
   const membersEl = document.getElementById('baraMembers');
 
   function showPanel(key){
-    panels.forEach(p => {
-      p.classList.toggle('is-active', p.dataset.panel === key);
-    });
+    panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
   }
 
-  // aespa 멤버 표시
   const AESPA_MAP = {
     '5kwdU60Xqh8': 'ALL',
     'YoARK1ZGfiw': 'KARINA',
     'oUH3ywua_0w': 'GISELLE'
   };
 
-  // videoId → panel 키
   const VIDEO_TO_PANEL = {
-    // aespa (3개는 같은 패널, 멤버만 바뀜)
     '5kwdU60Xqh8': 'aespa',
     'YoARK1ZGfiw': 'aespa',
     'oUH3ywua_0w': 'aespa',
-
-    // irene & seulgi
     'D7vNuz1WVxU': 'irene',
-
-    // TXT
     'FZJLu2uHEtM': 'txt1',
     'S-uJLjxkKS4': 'txt2',
     'ZzQcUe0_XFQ': 'txt3',
-
-    // ZB1
     'ANRk61jJfAQ': 'zb1'
   };
 
@@ -184,7 +155,6 @@
     const key = VIDEO_TO_PANEL[videoId] || 'aespa';
     showPanel(key);
 
-    // aespa일 때만 멤버 라인 사용
     if (key === 'aespa' && membersEl){
       membersEl.textContent = AESPA_MAP[videoId] || 'ALL';
     } else if (membersEl){
@@ -192,16 +162,26 @@
     }
   }
 
-  // ✅ 플레이어 → postMessage 수신
+  // ✅ 패널이 준비되었음을 최상단에 알림 (핵심)
+  function ready(){
+    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
+  }
+
   window.addEventListener('message', function(ev){
     const data = ev.data;
-    if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
-    apply(data.videoId);
+    if (!data) return;
+    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   });
 
   // 초기값
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
+
+  // ready는 DOM/폰트 로딩 타이밍까지 몇 번 쏴서 확률 올림
+  ready();
+  setTimeout(ready, 60);
+  setTimeout(ready, 180);
+  window.addEventListener('load', ready);
 })();
 </script>
 </body>
