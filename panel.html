@@ -24,8 +24,10 @@
       color:#111;
     }
 
-    /* ✅ iOS/iframe 글자 튐 방지 */
-    *{ max-height:1000000px; }
+    /* ✅ iOS / iframe 글자 튐 완전 차단 */
+    *{
+      max-height:1000000px;
+    }
 
     .root{
       height:100%;
@@ -50,6 +52,7 @@
 <body>
   <div class="root">
 
+    <!-- aespa -->
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -63,6 +66,7 @@
       </div>
     </div>
 
+    <!-- irene & seulgi -->
     <div class="panel" data-panel="irene">
       <div class="t-fixed">
         IRENE &amp; SEULGI<br>
@@ -75,6 +79,7 @@
       </div>
     </div>
 
+    <!-- TXT -->
     <div class="panel" data-panel="txt1">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
@@ -111,6 +116,7 @@
       </div>
     </div>
 
+    <!-- ZB1 -->
     <div class="panel" data-panel="zb1">
       <div class="t-fixed">
         ZEROBASEONE<br>
@@ -131,7 +137,9 @@
   const membersEl = document.getElementById('baraMembers');
 
   function showPanel(key){
-    panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+    panels.forEach(p=>{
+      p.classList.toggle('is-active', p.dataset.panel === key);
+    });
   }
 
   const AESPA_MAP = {
@@ -162,26 +170,31 @@
     }
   }
 
-  // ✅ 패널이 준비되었음을 최상단에 알림 (핵심)
+  /* ✅ 패널 READY 신호 (연동 안정화 핵심) */
   function ready(){
-    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
+    try{
+      window.top.postMessage({ type:'BARA_PANEL_READY' }, '*');
+    }catch(e){}
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
+    if (data.type === 'BARA_VIDEO_SELECT'){
+      apply(data.videoId);
+    }
   });
 
-  // 초기값
+  /* 초기 상태 */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  // ready는 DOM/폰트 로딩 타이밍까지 몇 번 쏴서 확률 올림
+  /* READY 여러 번 송신 (Readymag / iframe 지연 대응) */
   ready();
   setTimeout(ready, 60);
   setTimeout(ready, 180);
   window.addEventListener('load', ready);
+  window.addEventListener('pageshow', ready);
 })();
 </script>
 </body>
