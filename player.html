@@ -80,7 +80,16 @@ const swiper = new Swiper('.swiper', {
 
 const frames = Array.from(document.querySelectorAll('.frame'));
 
-// --- 안정 전송(핵심) ---
+function stopOthers(c){
+  frames.forEach(f=>{
+    if(f!==c){
+      f.classList.remove('is-playing');
+      const i=f.querySelector('iframe');
+      if(i) i.remove();
+    }
+  });
+}
+
 let lastMsg = null;
 let panelReady = false;
 let bootTimer = null;
@@ -94,7 +103,7 @@ function notify(videoId){
   postTop(lastMsg);
 }
 
-// 패널 READY 수신 → 마지막 신호 즉시 재전송
+// ✅ READY/REQUEST_LAST 수신 처리
 window.addEventListener('message', function(ev){
   const data = ev.data;
   if (!data) return;
@@ -104,14 +113,18 @@ window.addEventListener('message', function(ev){
     if (lastMsg) postTop(lastMsg);
     return;
   }
+
+  // ⭐ 패널이 “마지막 값 다시 보내”라고 요청하면 무조건 재전송
+  if (data.type === 'BARA_REQUEST_LAST'){
+    if (lastMsg) postTop(lastMsg);
+    return;
+  }
 }, true);
 
-// 첫 진입/복귀에서 “READY가 늦는” 케이스 대비: 부팅 패킷 반복
 function boot(){
   panelReady = false;
   if (bootTimer) clearInterval(bootTimer);
 
-  // 패널이 아직 준비 안되면, 마지막 선택(또는 첫 슬라이드)을 2초간 반복 송신
   const fallbackId = (frames[0] && frames[0].dataset.video) ? frames[0].dataset.video : null;
   if (!lastMsg && fallbackId) lastMsg = { type:'BARA_VIDEO_SELECT', videoId:fallbackId };
 
@@ -119,7 +132,7 @@ function boot(){
   bootTimer = setInterval(function(){
     tries++;
     if (lastMsg) postTop(lastMsg);
-    if (panelReady || tries > 40) clearInterval(bootTimer); // 2초
+    if (panelReady || tries > 40) clearInterval(bootTimer);
   }, 50);
 }
 
@@ -128,17 +141,6 @@ window.addEventListener('pageshow', boot);
 document.addEventListener('visibilitychange', function(){
   if (!document.hidden) boot();
 });
-
-// --- 플레이 ---
-function stopOthers(c){
-  frames.forEach(f=>{
-    if(f!==c){
-      f.classList.remove('is-playing');
-      const i=f.querySelector('iframe');
-      if(i) i.remove();
-    }
-  });
-}
 
 frames.forEach(f=>{
   f.addEventListener('click', ()=>{
@@ -163,8 +165,10 @@ swiper.on('slideChange', ()=>{
   if(f) notify(f.dataset.video);
 });
 
-// 첫 화면에서도 신호 1회 확보
-setTimeout(()=>{ const f=swiper.slides[swiper.activeIndex]?.querySelector('.frame'); if(f) notify(f.dataset.video); }, 0);
+setTimeout(()=>{
+  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  if(f) notify(f.dataset.video);
+}, 0);
 </script>
 </body>
 </html>
