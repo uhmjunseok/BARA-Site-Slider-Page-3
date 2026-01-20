@@ -98,10 +98,40 @@ function stopOthers(c){
   });
 }
 
+/* =========================
+   ✅ READY 핸드셰이크 추가
+   - 패널이 준비되면(BARA_PANEL_READY) 마지막 videoId 재전송
+   - 초기 진입 시 현재 슬라이드도 한번 전송
+========================= */
+let lastVideoId = null;
+
 function notify(videoId){
+  lastVideoId = videoId;
   const msg = { type:'BARA_VIDEO_SELECT', videoId };
   try { window.top.postMessage(msg, '*'); } catch(e) {}
 }
+
+// 패널이 READY 보내면 마지막 상태를 다시 쏴서 “가끔 연동 안됨” 제거
+window.addEventListener('message', function(ev){
+  const data = ev.data;
+  if (!data || data.type !== 'BARA_PANEL_READY') return;
+  if (lastVideoId) notify(lastVideoId);
+}, true);
+
+// 첫 진입/로드 시에도 현재 슬라이드를 한번 보내서 초기 동기화
+function sendInitial(){
+  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  if (f && f.dataset.video) notify(f.dataset.video);
+}
+window.addEventListener('load', function(){
+  setTimeout(sendInitial, 120);
+  setTimeout(sendInitial, 260);
+});
+window.addEventListener('pageshow', function(){
+  setTimeout(sendInitial, 120);
+  setTimeout(sendInitial, 260);
+});
+/* ========================= */
 
 frames.forEach(f=>{
   f.addEventListener('click', ()=>{
