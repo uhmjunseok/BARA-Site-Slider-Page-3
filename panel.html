@@ -1,10 +1,11 @@
-<!-- ✅ Page 3: panel.html 전체 교체본 -->
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>MICROCOSM Panel (Page 3)</title>
+
+  <!-- ✅ 탭/미리보기에서 'MICROCOSM' 같은 이름 뜨는 문제 방지 -->
+  <title>BARA Panel</title>
 
   <style>
     html, body{
@@ -30,93 +31,173 @@
       padding:24px;
       box-sizing:border-box;
       background:transparent;
-    }
 
-    .mt-title{ margin-bottom:6px; }
-    .mt-sub{ margin-bottom:14px; }
-
-    .mt-desc{
-      margin-bottom:14px;
-      max-width:60ch;
-
-      /* ✅ 길면 자동 줄바꿈 */
+      /* ✅ 모바일/좁은 박스에서 자동 줄바꿈 */
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
     }
 
-    .mt-year{ opacity:.8; }
+    .panel{ display:none; }
+    .panel.is-active{ display:block; }
+
+    .t-fixed{ margin-bottom:14px; }
+    .t-dynamic{ margin-bottom:14px; }
+    .t-meta{ opacity:.8; }
   </style>
 </head>
 
 <body>
   <div class="root">
-    <div class="mt-title" id="mtTitle">MICROCOSM</div>
-    <div class="mt-sub" id="mtSub">A compact study of sound, rhythm, and presence.</div>
-    <div class="mt-desc" id="mtDesc"></div>
-    <div class="mt-year" id="mtYear">2025</div>
+
+    <!-- AESPA -->
+    <div class="panel is-active" data-panel="aespa">
+      <div class="t-fixed">
+        aespa<br>
+        THE 1ST FULL ALBUM [ARMAGEDDON]<br>
+        FIND THE AUTHENTIC
+      </div>
+
+      <div class="t-dynamic" id="baraMembers">ALL</div>
+
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
+    </div>
+
+    <!-- IRENE & SEULGI -->
+    <div class="panel" data-panel="irene">
+      <div class="t-fixed">
+        IRENE &amp; SEULGI<br>
+        THE 2ND MINI ALBUM [TILT]<br>
+        BRAND FILM PT.3
+      </div>
+
+      <div class="t-meta">
+        2024<br>
+        SM ENTERTAINMENT
+      </div>
+    </div>
+
+    <!-- TXT 1 -->
+    <div class="panel" data-panel="txt1">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'LIGHT'
+      </div>
+
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+
+    <!-- TXT 2 -->
+    <div class="panel" data-panel="txt2">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        THE STAR CHAPTER: SANCTUARY<br>
+        CONCEPT CLIP 'SAVIOR'
+      </div>
+
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+
+    <!-- TXT 3 -->
+    <div class="panel" data-panel="txt3">
+      <div class="t-fixed">
+        TXT (TOMORROW X TOGETHER)<br>
+        MINISODE 3: TOMORROW<br>
+        CONCEPT CLIP 'ETHEREAL'
+      </div>
+
+      <div class="t-meta">
+        2024<br>
+        BIGHIT MUSIC
+      </div>
+    </div>
+
+    <!-- ZB1 (BAD Film) -->
+    <div class="panel" data-panel="zb1">
+      <div class="t-fixed">
+        ZEROBASEONE<br>
+        THE 4TH MINI ALBUM<br>
+        'BAD' FILM
+      </div>
+
+      <div class="t-meta">
+        2024<br>
+        WAKEONE
+      </div>
+    </div>
+
   </div>
 
-  <script>
-  (function(){
-    const DATA = {
-      /* ✅ Page 3 MICROCOSM IDs */
-      'DRPC2Ba7i7E': {
-        title:'MICROCOSM I',
-        sub:'RHYTHM',
-        desc:'A form appears, holds, and subtly disturbs the stillness of an office interior.',
-        year:'2025'
-      },
-      'Rp0HBSVz4hg': {
-        title:'MICROCOSM II',
-        sub:'INTRUSION',
-        desc:'Particles drift and cluster, exposing surface and texture through slow accumulation.',
-        year:'2025'
-      },
-      'EBvlq_t6CHA': {
-        title:'MICROCOSM III',
-        sub:'SPREAD',
-        desc:'Elements expand and overlap, producing a continuous yet unstable spatial flow.',
-        year:'2025'
-      },
-      'TldWk1-rzIA': {
-        title:'MICROCOSM IV',
-        sub:'DISRUPTION',
-        desc:'Irregular movements interrupt the system, leaving residual patterns and breaks in rhythm.',
-        year:'2025'
-      }
-    };
+<script>
+(function(){
+  const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
+  const membersEl = document.getElementById('baraMembers');
 
-    const titleEl = document.getElementById('mtTitle');
-    const subEl   = document.getElementById('mtSub');
-    const descEl  = document.getElementById('mtDesc');
-    const yearEl  = document.getElementById('mtYear');
-    if (!titleEl || !subEl || !descEl || !yearEl) return;
-
-    function setDefault(){
-      titleEl.textContent = 'MICROCOSM';
-      subEl.textContent   = 'A compact study of sound, rhythm, and presence.';
-      descEl.textContent  = '';
-      yearEl.textContent  = '2025';
-    }
-
-    function apply(videoId){
-      const d = DATA[videoId];
-      if (!d){ setDefault(); return; }
-      titleEl.textContent = d.title;
-      subEl.textContent   = d.sub;
-      descEl.textContent  = d.desc;
-      yearEl.textContent  = d.year || '2025';
-    }
-
-    window.addEventListener('message', function(ev){
-      const data = ev.data;
-      if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
-      apply(data.videoId);
+  function showPanel(key){
+    panels.forEach(p => {
+      p.classList.toggle('is-active', p.dataset.panel === key);
     });
+  }
 
-    setDefault();
-  })();
-  </script>
+  // aespa 멤버 표시
+  const AESPA_MAP = {
+    '5kwdU60Xqh8': 'ALL',
+    'YoARK1ZGfiw': 'KARINA',
+    'oUH3ywua_0w': 'GISELLE'
+  };
+
+  // videoId → panel 키
+  const VIDEO_TO_PANEL = {
+    // aespa (3개는 같은 패널, 멤버만 바뀜)
+    '5kwdU60Xqh8': 'aespa',
+    'YoARK1ZGfiw': 'aespa',
+    'oUH3ywua_0w': 'aespa',
+
+    // irene & seulgi
+    'D7vNuz1WVxU': 'irene',
+
+    // TXT
+    'FZJLu2uHEtM': 'txt1',
+    'S-uJLjxkKS4': 'txt2',
+    'ZzQcUe0_XFQ': 'txt3',
+
+    // ZB1
+    'ANRk61jJfAQ': 'zb1'
+  };
+
+  function apply(videoId){
+    const key = VIDEO_TO_PANEL[videoId] || 'aespa';
+    showPanel(key);
+
+    // aespa일 때만 멤버 라인 사용
+    if (key === 'aespa' && membersEl){
+      membersEl.textContent = AESPA_MAP[videoId] || 'ALL';
+    } else if (membersEl){
+      membersEl.textContent = '';
+    }
+  }
+
+  // ✅ 플레이어 → postMessage 수신
+  window.addEventListener('message', function(ev){
+    const data = ev.data;
+    if (!data || data.type !== 'BARA_VIDEO_SELECT') return;
+    apply(data.videoId);
+  });
+
+  // 초기값
+  showPanel('aespa');
+  if (membersEl) membersEl.textContent = 'ALL';
+})();
+</script>
 </body>
 </html>
