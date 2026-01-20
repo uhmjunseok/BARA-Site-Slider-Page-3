@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     :root{--vh:1vh}
-    html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+    html,body{margin:0;height:100%;background:transparent;overflow:hidden;overscroll-behavior:none}
     .app{height:calc(var(--vh)*100)}
-    .swiper{height:100%}
+    .swiper{height:100%;touch-action:pan-y}
     .swiper-slide{height:50%!important;display:flex;align-items:center;justify-content:center}
     .frame{position:relative;height:100%;aspect-ratio:16/9;cursor:pointer}
     .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -61,54 +61,89 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px')}
-setVh();window.addEventListener('resize',setVh)
+function setVh(){
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+}
+setVh();
+window.addEventListener('resize', setVh);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', setVh);
 
 const swiper = new Swiper('.swiper', {
   direction:'vertical',
   slidesPerView:2,
-  mousewheel:{forceToAxis:true,sensitivity:0.6,thresholdDelta:30,thresholdTime:250},
-  speed:280
+  speed:280,
+
+  // ✅ iframe/Readymag 환경에서 스크롤/스와이프 안정화
+  nested:true,
+  touchStartPreventDefault:false,
+  resistanceRatio:0.85,
+
+  mousewheel:{
+    forceToAxis:true,
+    sensitivity:0.6,
+    thresholdDelta:30,
+    thresholdTime:250
+  }
 });
 
-const frames=[...document.querySelectorAll('.frame')];
+const frames = Array.from(document.querySelectorAll('.frame'));
 
 function stopOthers(c){
   frames.forEach(f=>{
     if(f!==c){
       f.classList.remove('is-playing');
-      const i=f.querySelector('iframe'); if(i) i.remove();
+      const i=f.querySelector('iframe');
+      if(i) i.remove();
     }
   });
 }
 
 function notify(videoId){
   const msg = { type:'BARA_VIDEO_SELECT', videoId };
-  // ✅ 핵심: Readymag가 iframe을 감싸도 최상단(window.top)으로 올림
   try { window.top.postMessage(msg, '*'); } catch(e) {}
 }
 
 frames.forEach(f=>{
   f.addEventListener('click', ()=>{
     if(f.classList.contains('is-playing')) return;
-    const id=f.dataset.video;
+
+    const id = f.dataset.video;
     stopOthers(f);
 
-    const i=document.createElement('iframe');
-    i.src=`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
-    i.allow='autoplay; encrypted-media; picture-in-picture';
-    i.allowFullscreen=true;
+    const i = document.createElement('iframe');
+    i.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
+    i.allow = 'autoplay; encrypted-media; picture-in-picture';
+    i.allowFullscreen = true;
 
     f.appendChild(i);
     f.classList.add('is-playing');
     notify(id);
-  });
+  }, { passive:true });
 });
 
 swiper.on('slideChange', ()=>{
   const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
   if(f) notify(f.dataset.video);
 });
+
+// ✅ 첫 진입/뒤로가기 복귀에서 휠/터치가 안 먹는 케이스 방지
+(function(){
+  function focusFix(){
+    try { window.focus(); } catch(e){}
+    try { document.body && document.body.focus && document.body.focus(); } catch(e){}
+  }
+  window.addEventListener('load', function(){
+    setTimeout(focusFix, 0);
+    setTimeout(focusFix, 200);
+  });
+  window.addEventListener('pageshow', function(){
+    setTimeout(focusFix, 0);
+    setTimeout(focusFix, 200);
+  });
+  window.addEventListener('focus', function(){
+    setTimeout(focusFix, 0);
+  });
+})();
 </script>
 </body>
 </html>
