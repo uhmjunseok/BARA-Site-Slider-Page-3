@@ -49,7 +49,6 @@
 
 <body>
   <div class="root">
-
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -122,7 +121,6 @@
         WAKEONE
       </div>
     </div>
-
   </div>
 
 <script>
@@ -131,7 +129,7 @@
   const membersEl = document.getElementById('baraMembers');
 
   function showPanel(key){
-    panels.forEach(p=>p.classList.toggle('is-active', p.dataset.panel === key));
+    panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
   }
 
   const AESPA_MAP = {
@@ -162,30 +160,32 @@
     }
   }
 
-  // 메시지 리스너를 최대한 빨리 붙임
+  // ✅ 패널이 준비됨을 알리고, 마지막 상태 재요청(핵심)
+  function postTop(msg){
+    try { window.top.postMessage(msg, '*'); } catch(e){}
+  }
+  function ready(){
+    postTop({ type:'BARA_PANEL_READY' });
+    postTop({ type:'BARA_REQUEST_LAST' }); // 마지막 VIDEO_SELECT 재전송 요청
+  }
+
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
     if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   }, true);
 
-  // 초기값 확정
+  // 초기값
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  // READY 신호: 여러 타이밍에서 반복 송신
-  function ready(){
-    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
-  }
+  // READY를 여러 번 (DOM/폰트/iframe 지연 대비)
   ready();
-  setTimeout(ready, 50);
-  setTimeout(ready, 150);
-  setTimeout(ready, 350);
+  setTimeout(ready, 60);
+  setTimeout(ready, 180);
+  setTimeout(ready, 420);
   window.addEventListener('load', ready);
   window.addEventListener('pageshow', ready);
-  document.addEventListener('visibilitychange', function(){
-    if (!document.hidden) ready();
-  });
 })();
 </script>
 </body>
