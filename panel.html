@@ -9,42 +9,37 @@
     html, body{
       margin:0;
       padding:0;
-      width:100%;
       height:100%;
       background:transparent;
       overflow:hidden;
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
-      font-size:10px;
-
-      /* iOS/iframe 글자 튐 */
+      font-size:10px;                 /* 기본 10px */
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
 
       letter-spacing:-0.3px;
-      line-height:12px; /* ✅ px로 고정(핵심) */
+      line-height:1.2;
       color:#111;
+
+      /* 렌더링 안정화 */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
     }
 
-    /* ✅ iOS / iframe 글자 튐 완전 차단 */
-    *{ max-height:1000000px; box-sizing:border-box; }
+    /* iOS/iframe 글자 튐 완화 */
+    *{ max-height:1000000px; }
 
-    /* ✅ 레이아웃을 “문서 흐름”이 아니라 “캔버스”로 고정(핵심) */
     .root{
-      position:absolute;
-      top:0; left:0; right:0; bottom:0;
-
+      height:100%;
       padding:24px;
+      box-sizing:border-box;
       background:transparent;
 
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
-
-      /* ✅ 크롬 서브픽셀 흔들림 완화(효과 있는 편) */
-      transform: translateZ(0);
-      -webkit-font-smoothing: antialiased;
-      text-rendering: geometricPrecision;
     }
 
     .panel{ display:none; }
@@ -140,6 +135,15 @@
 
 <script>
 (function(){
+  /* 크롬 데스크탑만 폰트 13px로 보정 */
+  function isDesktopChrome(){
+    var ua = navigator.userAgent;
+    return /Chrome/.test(ua) && !/Edg|OPR|Brave/.test(ua) && !/Android/.test(ua);
+  }
+  if (isDesktopChrome()){
+    document.documentElement.style.fontSize = '13px';
+  }
+
   const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
   const membersEl = document.getElementById('baraMembers');
 
@@ -177,19 +181,24 @@
     }
   }
 
+  /* 패널 READY 신호 */
   function ready(){
-    try{ window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); }catch(e){}
+    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
+    if (data.type === 'BARA_VIDEO_SELECT'){
+      apply(data.videoId);
+    }
   });
 
+  /* 초기 상태 */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
+  /* READY 여러 번 */
   ready();
   setTimeout(ready, 60);
   setTimeout(ready, 180);
