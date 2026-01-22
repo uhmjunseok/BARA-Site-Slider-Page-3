@@ -14,8 +14,10 @@
       overflow:hidden;
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
-      font-size:11px;   /* 🔥 핵심: 15 → 11 */
-      
+
+      /* ✅ 패널 자체에서 11px로 강제 고정 */
+      font-size:11px !important;
+
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
 
@@ -24,10 +26,8 @@
       color:#111;
     }
 
-    /* iOS iframe 글자 튐 방지 */
-    *{
-      max-height:1000000px;
-    }
+    /* ✅ iOS/iframe 글자 튐 완화(너가 쓰던 값 유지) */
+    *{ max-height:1000000px; }
 
     .root{
       height:100%;
@@ -137,9 +137,7 @@
   const membersEl = document.getElementById('baraMembers');
 
   function showPanel(key){
-    panels.forEach(p=>{
-      p.classList.toggle('is-active', p.dataset.panel === key);
-    });
+    panels.forEach(p=> p.classList.toggle('is-active', p.dataset.panel === key));
   }
 
   const AESPA_MAP = {
@@ -170,26 +168,19 @@
     }
   }
 
-  /* 패널 READY 신호 */
   function ready(){
-    try{
-      window.top.postMessage({ type:'BARA_PANEL_READY' }, '*');
-    }catch(e){}
+    try{ window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); }catch(e){}
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT'){
-      apply(data.videoId);
-    }
+    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   });
 
-  /* 초기 상태 */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  /* READY 다중 송신 */
   ready();
   setTimeout(ready, 60);
   setTimeout(ready, 180);
