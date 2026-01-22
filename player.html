@@ -7,26 +7,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     :root{--vh:1vh}
-    html,body{
-      margin:0;height:100%;
-      background:transparent;
-      overflow:hidden;
-      overscroll-behavior:none;
-      -webkit-text-size-adjust:100%;
-      text-size-adjust:100%;
-    }
+    html,body{margin:0;height:100%;background:transparent;overflow:hidden;overscroll-behavior:none}
     .app{height:calc(var(--vh)*100)}
     .swiper{height:100%;touch-action:pan-y}
     .swiper-slide{height:50%!important;display:flex;align-items:center;justify-content:center}
     .frame{position:relative;height:100%;aspect-ratio:16/9;cursor:pointer}
     .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .play{
-      position:absolute;inset:0;margin:auto;width:0;height:0;
-      border-top:18px solid transparent;
-      border-bottom:18px solid transparent;
-      border-left:30px solid #fff;
-      pointer-events:none;opacity:.9
-    }
+    .play{position:absolute;inset:0;margin:auto;width:0;height:0;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:30px solid #fff;pointer-events:none;opacity:.9}
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .is-playing .thumb,.is-playing .play{opacity:0}
   </style>
@@ -74,114 +61,113 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-(function(){
-  function setVh(){
-    document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
-  }
+/* =========================
+   1) vh 계산: zoom에서도 안정적으로
+   - visualViewport 우선
+========================= */
+function setVh(){
+  var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+}
+setVh();
+window.addEventListener('resize', setVh);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', setVh);
+
+/* =========================
+   2) Swiper
+========================= */
+const swiper = new Swiper('.swiper', {
+  direction:'vertical',
+  slidesPerView:2,
+  speed:280,
+  nested:true,
+  touchStartPreventDefault:false,
+  resistanceRatio:0.85,
+  observer:true,
+  observeParents:true,
+  mousewheel:{forceToAxis:true,sensitivity:0.6,thresholdDelta:30,thresholdTime:250}
+});
+
+/* =========================
+   3) zoom/viewport 변화 대응:
+   - 줌 변경은 "resize"가 애매하게 들어오는 경우가 있어
+     visualViewport + RAF + update 강제
+========================= */
+function hardRelayout(){
+  // vh 재계산
   setVh();
-  window.addEventListener('resize', setVh);
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', setVh);
 
-  const swiper = new Swiper('.swiper', {
-    direction:'vertical',
-    slidesPerView:2,
-    speed:280,
-    nested:true,
-    touchStartPreventDefault:false,
-    resistanceRatio:0.85,
-    mousewheel:{forceToAxis:true,sensitivity:0.6,thresholdDelta:30,thresholdTime:250}
+  // Swiper 레이아웃 강제 재계산
+  try {
+    swiper.updateSize();
+    swiper.updateSlides();
+    swiper.updateProgress();
+    swiper.updateSlidesClasses();
+    swiper.update();
+  } catch(e){}
+
+  // iOS/크롬에서 가끔 터치가 죽는 케이스 방지
+  try { swiper.mousewheel && swiper.mousewheel.enable && swiper.mousewheel.enable(); } catch(e){}
+}
+
+// 줌/주소창/탭전환 등으로 viewport가 바뀔 때
+window.addEventListener('orientationchange', ()=>setTimeout(hardRelayout, 200));
+window.addEventListener('pageshow', ()=>setTimeout(hardRelayout, 0));
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) setTimeout(hardRelayout, 0); });
+
+// visualViewport가 있으면 이게 "줌"을 가장 잘 잡음
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', ()=>{
+    requestAnimationFrame(()=>requestAnimationFrame(hardRelayout));
   });
+}
 
-  const frames = Array.from(document.querySelectorAll('.frame'));
+/* =========================
+   4) 플레이 로직 (너 기존 그대로)
+========================= */
+const frames = Array.from(document.querySelectorAll('.frame'));
 
-  function stopOthers(c){
-    frames.forEach(f=>{
-      if(f!==c){
-        f.classList.remove('is-playing');
-        const i=f.querySelector('iframe'); if(i) i.remove();
-      }
-    });
-  }
-
-  // --- 안정 전송(핵심) ---
-  let lastMsg = null;
-  let panelReady = false;
-  let bootTimer = null;
-
-  function postUp(msg){
-    // Readymag 중첩 iframe 케이스: parent/top 둘 다 시도
-    try { window.parent && window.parent.postMessage(msg, '*'); } catch(e) {}
-    try { window.top && window.top.postMessage(msg, '*'); } catch(e) {}
-  }
-
-  function notify(videoId){
-    lastMsg = { type:'BARA_VIDEO_SELECT', videoId: videoId };
-    postUp(lastMsg);
-  }
-
-  // 패널 READY 수신 → 마지막 신호 즉시 재전송
-  window.addEventListener('message', function(ev){
-    const data = ev.data;
-    if (!data) return;
-
-    if (data.type === 'BARA_PANEL_READY'){
-      panelReady = true;
-      if (lastMsg) postUp(lastMsg);
-    }
-  }, true);
-
-  // READY가 늦는/안오는 케이스 대비: 2초간 재전송
-  function boot(){
-    panelReady = false;
-    if (bootTimer) clearInterval(bootTimer);
-
-    const fallbackId = frames[0] && frames[0].dataset.video ? frames[0].dataset.video : null;
-    if (!lastMsg && fallbackId) lastMsg = { type:'BARA_VIDEO_SELECT', videoId:fallbackId };
-
-    let tries = 0;
-    bootTimer = setInterval(function(){
-      tries++;
-      if (lastMsg) postUp(lastMsg);
-      if (panelReady || tries > 40) clearInterval(bootTimer); // 2초
-    }, 50);
-  }
-
-  window.addEventListener('load', boot);
-  window.addEventListener('pageshow', boot);
-  document.addEventListener('visibilitychange', function(){
-    if (!document.hidden) boot();
-  });
-
-  // --- 플레이 클릭 ---
+function stopOthers(c){
   frames.forEach(f=>{
-    f.addEventListener('click', ()=>{
-      if(f.classList.contains('is-playing')) return;
-
-      const id = f.dataset.video;
-      stopOthers(f);
-
-      const i = document.createElement('iframe');
-      i.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
-      i.allow = 'autoplay; encrypted-media; picture-in-picture';
-      i.allowFullscreen = true;
-
-      f.appendChild(i);
-      f.classList.add('is-playing');
-      notify(id);
-    }, { passive:true });
+    if(f!==c){
+      f.classList.remove('is-playing');
+      const i=f.querySelector('iframe');
+      if(i) i.remove();
+    }
   });
+}
 
-  swiper.on('slideChange', ()=>{
-    const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
-    if(f) notify(f.dataset.video);
-  });
+function notify(videoId){
+  const msg = { type:'BARA_VIDEO_SELECT', videoId };
+  try { window.top.postMessage(msg, '*'); } catch(e) {}
+}
 
-  // 첫 화면에서도 신호 확보
-  setTimeout(()=>{
-    const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
-    if(f) notify(f.dataset.video);
-  }, 0);
-})();
+frames.forEach(f=>{
+  f.addEventListener('click', ()=>{
+    if(f.classList.contains('is-playing')) return;
+
+    const id = f.dataset.video;
+    stopOthers(f);
+
+    const i = document.createElement('iframe');
+    i.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
+    i.allow = 'autoplay; encrypted-media; picture-in-picture';
+    i.allowFullscreen = true;
+
+    f.appendChild(i);
+    f.classList.add('is-playing');
+    notify(id);
+  }, { passive:true });
+});
+
+swiper.on('slideChange', ()=>{
+  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  if(f) notify(f.dataset.video);
+});
+
+// 첫 렌더에서도 한 번 정렬
+setTimeout(hardRelayout, 0);
+setTimeout(hardRelayout, 200);
 </script>
 </body>
 </html>
