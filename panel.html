@@ -24,7 +24,7 @@
       color:#111;
     }
 
-    /* iOS/iframe 글자 튐 완화 */
+    /* ✅ iOS / iframe 글자 튐 완전 차단(이미지/텍스트 리플로우 방지용 트릭) */
     *{ max-height:1000000px; }
 
     .root{
@@ -49,6 +49,7 @@
 
 <body>
   <div class="root">
+
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -121,6 +122,7 @@
         WAKEONE
       </div>
     </div>
+
   </div>
 
 <script>
@@ -129,7 +131,9 @@
   const membersEl = document.getElementById('baraMembers');
 
   function showPanel(key){
-    panels.forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
+    panels.forEach(p=>{
+      p.classList.toggle('is-active', p.dataset.panel === key);
+    });
   }
 
   const AESPA_MAP = {
@@ -160,13 +164,11 @@
     }
   }
 
-  // ✅ 패널이 준비됨을 알리고, 마지막 상태 재요청(핵심)
-  function postTop(msg){
-    try { window.top.postMessage(msg, '*'); } catch(e){}
-  }
-  function ready(){
-    postTop({ type:'BARA_PANEL_READY' });
-    postTop({ type:'BARA_REQUEST_LAST' }); // 마지막 VIDEO_SELECT 재전송 요청
+  // READY 신호: parent/top 둘 다로 쏴서 확률 올림
+  function postReady(){
+    const msg = { type:'BARA_PANEL_READY' };
+    try { window.parent && window.parent.postMessage(msg, '*'); } catch(e){}
+    try { window.top && window.top.postMessage(msg, '*'); } catch(e){}
   }
 
   window.addEventListener('message', function(ev){
@@ -175,17 +177,16 @@
     if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   }, true);
 
-  // 초기값
+  // 초기 상태
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  // READY를 여러 번 (DOM/폰트/iframe 지연 대비)
-  ready();
-  setTimeout(ready, 60);
-  setTimeout(ready, 180);
-  setTimeout(ready, 420);
-  window.addEventListener('load', ready);
-  window.addEventListener('pageshow', ready);
+  // READY 다중 송신(로드/복귀/지연 대응)
+  postReady();
+  setTimeout(postReady, 60);
+  setTimeout(postReady, 180);
+  window.addEventListener('load', postReady);
+  window.addEventListener('pageshow', postReady);
 })();
 </script>
 </body>
