@@ -19,6 +19,7 @@
   </style>
 </head>
 <body>
+
 <div class="app">
   <div class="swiper">
     <div class="swiper-wrapper">
@@ -62,12 +63,10 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 /* =========================
-   1) vh 계산: zoom에서도 안정적으로
-   - visualViewport 우선
+   1) VH 안정화
 ========================= */
 function setVh(){
-  var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
 }
 setVh();
 window.addEventListener('resize', setVh);
@@ -83,63 +82,105 @@ const swiper = new Swiper('.swiper', {
   nested:true,
   touchStartPreventDefault:false,
   resistanceRatio:0.85,
-  observer:true,
-  observeParents:true,
-  mousewheel:{forceToAxis:true,sensitivity:0.6,thresholdDelta:30,thresholdTime:250}
+  mousewheel:{ forceToAxis:true, sensitivity:0.6, thresholdDelta:30, thresholdTime:250 }
 });
 
-/* =========================
-   3) zoom/viewport 변화 대응:
-   - 줌 변경은 "resize"가 애매하게 들어오는 경우가 있어
-     visualViewport + RAF + update 강제
-========================= */
-function hardRelayout(){
-  // vh 재계산
-  setVh();
-
-  // Swiper 레이아웃 강제 재계산
-  try {
-    swiper.updateSize();
-    swiper.updateSlides();
-    swiper.updateProgress();
-    swiper.updateSlidesClasses();
-    swiper.update();
-  } catch(e){}
-
-  // iOS/크롬에서 가끔 터치가 죽는 케이스 방지
-  try { swiper.mousewheel && swiper.mousewheel.enable && swiper.mousewheel.enable(); } catch(e){}
-}
-
-// 줌/주소창/탭전환 등으로 viewport가 바뀔 때
-window.addEventListener('orientationchange', ()=>setTimeout(hardRelayout, 200));
-window.addEventListener('pageshow', ()=>setTimeout(hardRelayout, 0));
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) setTimeout(hardRelayout, 0); });
-
-// visualViewport가 있으면 이게 "줌"을 가장 잘 잡음
-if (window.visualViewport){
-  window.visualViewport.addEventListener('resize', ()=>{
-    requestAnimationFrame(()=>requestAnimationFrame(hardRelayout));
-  });
-}
-
-/* =========================
-   4) 플레이 로직 (너 기존 그대로)
-========================= */
 const frames = Array.from(document.querySelectorAll('.frame'));
 
-function stopOthers(c){
-  frames.forEach(f=>{
-    if(f!==c){
-      f.classList.remove('is-playing');
-      const i=f.querySelector('iframe');
-      if(i) i.remove();
-    }
-  });
+/* =========================
+   3) 패널 연동: READY + boot + REQUEST_STATE 대응
+========================= */
+let lastMsg = null;           // {type:'BARA_VIDEO_SELECT', videoId}
+let currentVideoId = null;
+let panelReady = false;
+let bootTimer = null;
+
+function postTop(msg){
+  try { window.top.postMessage(msg, '*'); } catch(e) {}
 }
 
 function notify(videoId){
-  const msg = { type:'BARA_VIDEO_SELECT', videoId };
-  try { window.top.postMessage(msg, '*'); } catch(e) {}
+  currentVideoId = videoId;
+  lastMsg = { type:'BARA_VIDEO_SELECT', videoId };
+  postTop(lastMsg);
+}
+
+window.addEventListener('message', function(ev){
+  const data = ev.data;
+  if (!data || !data.type) return;
+
+  if (data.type === 'BARA_PANEL_READY'){
+    panelReady = true;
+    if (lastMsg) postTop(lastMsg);
+    return;
+  }
+
+  if (data.type === 'BARA_REQUEST_STATE'){
+    if (!currentVideoId){
+      const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+      if (f) currentVideoId = f.dataset.video;
+    }
+    if (currentVideoId){
+      postTop({ type:'BARA_VIDEO_SELECT', videoId: currentVideoId });
+    }
+    return;
+  }
+}, true);
+
+/* ✅ player 준비 신호 */
+function playerReady(){
+  postTop({ type:'BARA_PLAYER_READY' });
+}
+playerReady();
+setTimeout(playerReady, 60);
+setTimeout(playerReady, 180);
+window.addEventListener('load', playerReady);
+window.addEventListener('pageshow', playerReady);
+
+function boot(){
+  panelReady = false;
+  if (bootTimer) clearInterval(bootTimer);
+
+  const activeFrame = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  const fallbackId =
+    (activeFrame && activeFrame.dataset.video) ||
+    (frames[0] && frames[0].dataset.video) ||
+    null;
+
+  if (!lastMsg && fallbackId){
+    currentVideoId = fallbackId;
+    lastMsg = { type:'BARA_VIDEO_SELECT', videoId:fallbackId };
+  }
+
+  let tries = 0;
+  bootTimer = setInterval(function(){
+    tries++;
+    if (lastMsg) postTop(lastMsg);
+    if (panelReady || tries > 40) clearInterval(bootTimer);
+  }, 50);
+}
+
+window.addEventListener('load', boot);
+window.addEventListener('pageshow', boot);
+document.addEventListener('visibilitychange', function(){
+  if (!document.hidden) boot();
+});
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', function(){ setTimeout(boot, 0); });
+}
+window.addEventListener('resize', function(){ setTimeout(boot, 0); });
+
+/* =========================
+   4) 플레이
+========================= */
+function stopOthers(current){
+  frames.forEach(f=>{
+    if(f !== current){
+      f.classList.remove('is-playing');
+      const i = f.querySelector('iframe');
+      if(i) i.remove();
+    }
+  });
 }
 
 frames.forEach(f=>{
@@ -156,6 +197,7 @@ frames.forEach(f=>{
 
     f.appendChild(i);
     f.classList.add('is-playing');
+
     notify(id);
   }, { passive:true });
 });
@@ -165,9 +207,34 @@ swiper.on('slideChange', ()=>{
   if(f) notify(f.dataset.video);
 });
 
-// 첫 렌더에서도 한 번 정렬
-setTimeout(hardRelayout, 0);
-setTimeout(hardRelayout, 200);
+/* 첫 화면에서도 1회 신호 확보 + 부팅 */
+setTimeout(function(){
+  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  if(f) notify(f.dataset.video);
+  boot();
+}, 0);
+
+/* =========================
+   5) 포커스 이슈 완화
+========================= */
+(function(){
+  function focusFix(){
+    try { window.focus(); } catch(e){}
+    try { document.body && document.body.focus && document.body.focus(); } catch(e){}
+  }
+  window.addEventListener('load', function(){
+    setTimeout(focusFix, 0);
+    setTimeout(focusFix, 200);
+  });
+  window.addEventListener('pageshow', function(){
+    setTimeout(focusFix, 0);
+    setTimeout(focusFix, 200);
+  });
+  window.addEventListener('focus', function(){
+    setTimeout(focusFix, 0);
+  });
+})();
 </script>
+
 </body>
 </html>
