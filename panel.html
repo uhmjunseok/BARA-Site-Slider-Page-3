@@ -58,7 +58,7 @@
 </head>
 
 <body>
-  <div class="root">
+  <div class="root" id="baraRoot">
 
     <!-- aespa -->
     <div class="panel is-active" data-panel="aespa">
@@ -141,7 +141,9 @@
 
 <script>
 (function(){
-  /* 크롬 판별: UA-Reduction 대비(가능하면 uaData 사용) */
+  /* =========================
+     A) 크롬(데스크탑) 판별 + 줌/뷰포트 변화에서도 재적용
+  ========================= */
   function isDesktopChrome(){
     // 1) UAData 우선
     if (navigator.userAgentData && navigator.userAgentData.brands){
@@ -152,18 +154,57 @@
       const isMobile = navigator.userAgentData.mobile === true;
       return isChromium && !isEdge && !isOpera && !isMobile;
     }
-
     // 2) fallback: UA string
     var ua = navigator.userAgent;
-    var isChrome = /Chrome/.test(ua) && !/Edg|OPR|Brave/.test(ua) && !/Android/.test(ua);
-    return isChrome;
+    return /Chrome/.test(ua) && !/Edg|OPR|Brave/.test(ua) && !/Android/.test(ua);
   }
 
-  // ✅ 여기 핵심: 크롬 데스크탑만 UI 전체 스케일을 1.3으로
-  if (isDesktopChrome()){
-    document.documentElement.style.setProperty('--ui-scale', '1.5');
+  // 네가 원한 값 유지: 크롬 데스크탑은 1.5
+  function applyUiScale(){
+    if (isDesktopChrome()){
+      document.documentElement.style.setProperty('--ui-scale', '1.5');
+    } else {
+      document.documentElement.style.setProperty('--ui-scale', '1');
+    }
   }
 
+  applyUiScale();
+
+  // 줌/주소창/탭복귀 등에서 글자/위치 튐 완화: visualViewport 변화 시 재적용
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', function(){
+      // resize 연속 발생시 안정화를 위해 2프레임 뒤 적용
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          applyUiScale();
+          softRelayout();
+        });
+      });
+    });
+  }
+
+  window.addEventListener('resize', function(){
+    applyUiScale();
+    softRelayout();
+  });
+
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden){
+      applyUiScale();
+      softRelayout();
+      readyBurst();
+    }
+  });
+
+  window.addEventListener('pageshow', function(){
+    applyUiScale();
+    softRelayout();
+    readyBurst();
+  });
+
+  /* =========================
+     B) 패널 표시 로직
+  ========================= */
   const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
   const membersEl = document.getElementById('baraMembers');
 
@@ -199,26 +240,67 @@
     } else if (membersEl){
       membersEl.textContent = '';
     }
-  }
 
-  function ready(){
-    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
+    // 패널 내용이 바뀌는 순간에 가끔 줄바꿈/위치가 튈 수 있어서 1회만 부드럽게 리플로우
+    softRelayout();
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
     if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
-  });
+  }, true);
 
+  /* =========================
+     C) READY 신호: 연동 실패(새로고침하면 되는 증상) 감소용
+  ========================= */
+  function ready(){
+    try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
+  }
+
+  // burst로 여러 번 (로드 타이밍 차이 흡수)
+  function readyBurst(){
+    ready();
+    setTimeout(ready, 60);
+    setTimeout(ready, 180);
+    setTimeout(ready, 420);
+  }
+
+  /* =========================
+     D) 글자 "한번 크게 떴다 정상" 같은 튐 완화용 리레이아웃
+     - 과격한 강제 리로드 대신, 리플로우/리페인트만 유도
+  ========================= */
+  function softRelayout(){
+    var root = document.getElementById('baraRoot');
+    if (!root) return;
+
+    // 1) layout read → write로 리플로우 유도
+    // (주의: 과하게 반복하면 성능 나쁨. 여기서는 최소 1~2회만)
+    try { root.getBoundingClientRect(); } catch(e){}
+
+    // 2) 아주 짧게 translateZ로 re-paint 유도(시각적으로 튐 감소)
+    // (원상복귀)
+    root.style.transform = 'translateZ(0)';
+    setTimeout(function(){
+      root.style.transform = '';
+    }, 0);
+  }
+
+  /* =========================
+     E) 초기 상태
+  ========================= */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  ready();
-  setTimeout(ready, 60);
-  setTimeout(ready, 180);
-  window.addEventListener('load', ready);
-  window.addEventListener('pageshow', ready);
+  // 초기 로딩 시에도 1~2번만 안정화
+  readyBurst();
+  setTimeout(softRelayout, 0);
+  setTimeout(softRelayout, 200);
+  window.addEventListener('load', function(){
+    readyBurst();
+    setTimeout(softRelayout, 0);
+    setTimeout(softRelayout, 200);
+  });
 })();
 </script>
 </body>
