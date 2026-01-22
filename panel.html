@@ -14,8 +14,8 @@
       overflow:hidden;
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
-      font-size:15px;
-
+      font-size:11px;   /* 🔥 핵심: 15 → 11 */
+      
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
 
@@ -24,8 +24,10 @@
       color:#111;
     }
 
-    /* ✅ iOS / iframe 글자 튐 완전 차단(이미지/텍스트 리플로우 방지용 트릭) */
-    *{ max-height:1000000px; }
+    /* iOS iframe 글자 튐 방지 */
+    *{
+      max-height:1000000px;
+    }
 
     .root{
       height:100%;
@@ -50,6 +52,7 @@
 <body>
   <div class="root">
 
+    <!-- aespa -->
     <div class="panel is-active" data-panel="aespa">
       <div class="t-fixed">
         aespa<br>
@@ -63,6 +66,7 @@
       </div>
     </div>
 
+    <!-- irene & seulgi -->
     <div class="panel" data-panel="irene">
       <div class="t-fixed">
         IRENE &amp; SEULGI<br>
@@ -75,6 +79,7 @@
       </div>
     </div>
 
+    <!-- TXT -->
     <div class="panel" data-panel="txt1">
       <div class="t-fixed">
         TXT (TOMORROW X TOGETHER)<br>
@@ -111,6 +116,7 @@
       </div>
     </div>
 
+    <!-- ZB1 -->
     <div class="panel" data-panel="zb1">
       <div class="t-fixed">
         ZEROBASEONE<br>
@@ -164,29 +170,31 @@
     }
   }
 
-  // READY 신호: parent/top 둘 다로 쏴서 확률 올림
-  function postReady(){
-    const msg = { type:'BARA_PANEL_READY' };
-    try { window.parent && window.parent.postMessage(msg, '*'); } catch(e){}
-    try { window.top && window.top.postMessage(msg, '*'); } catch(e){}
+  /* 패널 READY 신호 */
+  function ready(){
+    try{
+      window.top.postMessage({ type:'BARA_PANEL_READY' }, '*');
+    }catch(e){}
   }
 
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
-  }, true);
+    if (data.type === 'BARA_VIDEO_SELECT'){
+      apply(data.videoId);
+    }
+  });
 
-  // 초기 상태
+  /* 초기 상태 */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  // READY 다중 송신(로드/복귀/지연 대응)
-  postReady();
-  setTimeout(postReady, 60);
-  setTimeout(postReady, 180);
-  window.addEventListener('load', postReady);
-  window.addEventListener('pageshow', postReady);
+  /* READY 다중 송신 */
+  ready();
+  setTimeout(ready, 60);
+  setTimeout(ready, 180);
+  window.addEventListener('load', ready);
+  window.addEventListener('pageshow', ready);
 })();
 </script>
 </body>
