@@ -9,35 +9,42 @@
     html, body{
       margin:0;
       padding:0;
+      width:100%;
       height:100%;
       background:transparent;
       overflow:hidden;
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
+      font-size:10px;
 
-      /* ✅ 패널 폰트 10px로 강제 */
-      font-size:10px !important;
-
+      /* iOS/iframe 글자 튐 */
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
 
       letter-spacing:-0.3px;
-      line-height:1.2;
+      line-height:12px; /* ✅ px로 고정(핵심) */
       color:#111;
     }
 
-    /* iOS / iframe 글자 튐 완화 */
-    *{ max-height:1000000px; }
+    /* ✅ iOS / iframe 글자 튐 완전 차단 */
+    *{ max-height:1000000px; box-sizing:border-box; }
 
+    /* ✅ 레이아웃을 “문서 흐름”이 아니라 “캔버스”로 고정(핵심) */
     .root{
-      height:100%;
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+
       padding:24px;
-      box-sizing:border-box;
       background:transparent;
 
       white-space:normal;
       overflow-wrap:anywhere;
       word-break:break-word;
+
+      /* ✅ 크롬 서브픽셀 흔들림 완화(효과 있는 편) */
+      transform: translateZ(0);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
     }
 
     .panel{ display:none; }
@@ -170,7 +177,6 @@
     }
   }
 
-  /* 패널 READY 신호 */
   function ready(){
     try{ window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); }catch(e){}
   }
@@ -178,9 +184,7 @@
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT'){
-      apply(data.videoId);
-    }
+    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   });
 
   showPanel('aespa');
