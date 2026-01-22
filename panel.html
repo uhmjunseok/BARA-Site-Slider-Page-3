@@ -6,6 +6,13 @@
   <title>BARA Panel</title>
 
   <style>
+    :root{
+      --ui-scale: 1;   /* 기본 */
+      --fs: 10px;      /* 기본 폰트 */
+      --pad: 24px;     /* 기본 패딩 */
+      --gap: 14px;     /* 기본 간격 */
+    }
+
     html, body{
       margin:0;
       padding:0;
@@ -14,7 +21,7 @@
       overflow:hidden;
 
       font-family:"Aktiv Grotesk","AktivGrotesk",Arial,sans-serif;
-      font-size:10px;                 /* 기본 10px */
+      font-size: calc(var(--fs) * var(--ui-scale));
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
 
@@ -22,7 +29,6 @@
       line-height:1.2;
       color:#111;
 
-      /* 렌더링 안정화 */
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: geometricPrecision;
@@ -33,7 +39,7 @@
 
     .root{
       height:100%;
-      padding:24px;
+      padding: calc(var(--pad) * var(--ui-scale));
       box-sizing:border-box;
       background:transparent;
 
@@ -45,8 +51,8 @@
     .panel{ display:none; }
     .panel.is-active{ display:block; }
 
-    .t-fixed{ margin-bottom:14px; }
-    .t-dynamic{ margin-bottom:14px; }
+    .t-fixed{ margin-bottom: calc(var(--gap) * var(--ui-scale)); }
+    .t-dynamic{ margin-bottom: calc(var(--gap) * var(--ui-scale)); }
     .t-meta{ opacity:.8; }
   </style>
 </head>
@@ -135,13 +141,27 @@
 
 <script>
 (function(){
-  /* 크롬 데스크탑만 폰트 13px로 보정 */
+  /* 크롬 판별: UA-Reduction 대비(가능하면 uaData 사용) */
   function isDesktopChrome(){
+    // 1) UAData 우선
+    if (navigator.userAgentData && navigator.userAgentData.brands){
+      const brands = navigator.userAgentData.brands.map(b => (b.brand || '').toLowerCase());
+      const isChromium = brands.some(b => b.includes('chromium')) || brands.some(b => b.includes('google chrome'));
+      const isEdge = brands.some(b => b.includes('microsoft edge'));
+      const isOpera = brands.some(b => b.includes('opera'));
+      const isMobile = navigator.userAgentData.mobile === true;
+      return isChromium && !isEdge && !isOpera && !isMobile;
+    }
+
+    // 2) fallback: UA string
     var ua = navigator.userAgent;
-    return /Chrome/.test(ua) && !/Edg|OPR|Brave/.test(ua) && !/Android/.test(ua);
+    var isChrome = /Chrome/.test(ua) && !/Edg|OPR|Brave/.test(ua) && !/Android/.test(ua);
+    return isChrome;
   }
+
+  // ✅ 여기 핵심: 크롬 데스크탑만 UI 전체 스케일을 1.3으로
   if (isDesktopChrome()){
-    document.documentElement.style.fontSize = '13px';
+    document.documentElement.style.setProperty('--ui-scale', '1.3');
   }
 
   const panels = Array.from(document.querySelectorAll('.panel[data-panel]'));
@@ -181,7 +201,6 @@
     }
   }
 
-  /* 패널 READY 신호 */
   function ready(){
     try { window.top.postMessage({ type:'BARA_PANEL_READY' }, '*'); } catch(e){}
   }
@@ -189,16 +208,12 @@
   window.addEventListener('message', function(ev){
     const data = ev.data;
     if (!data) return;
-    if (data.type === 'BARA_VIDEO_SELECT'){
-      apply(data.videoId);
-    }
+    if (data.type === 'BARA_VIDEO_SELECT') apply(data.videoId);
   });
 
-  /* 초기 상태 */
   showPanel('aespa');
   if (membersEl) membersEl.textContent = 'ALL';
 
-  /* READY 여러 번 */
   ready();
   setTimeout(ready, 60);
   setTimeout(ready, 180);
