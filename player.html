@@ -11,11 +11,19 @@
     .app{height:calc(var(--vh)*100)}
     .swiper{height:100%;touch-action:pan-y}
     .swiper-slide{height:50%!important;display:flex;align-items:center;justify-content:center}
+
     .frame{position:relative;height:100%;aspect-ratio:16/9;cursor:pointer}
     .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     .play{position:absolute;inset:0;margin:auto;width:0;height:0;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:30px solid #fff;pointer-events:none;opacity:.9}
     iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
     .is-playing .thumb,.is-playing .play{opacity:0}
+
+    /* ✅ 마지막 여백(빈 슬라이드) */
+    .swiper-slide.is-spacer{
+      height:50%!important;
+      pointer-events:none;
+      background:transparent;
+    }
   </style>
 </head>
 <body>
@@ -56,6 +64,9 @@
         <img class="thumb" src="https://res.cloudinary.com/dlzutetki/image/upload/v1765926235/ZEROBASEONE_%EC%A0%9C%EB%A1%9C%EB%B2%A0%EC%9D%B4%EC%8A%A4%EC%9B%90_The_4th_Mini_Album____BAD_Film_2_dxmdpi.jpg" alt=""><div class="play"></div>
       </div></div>
 
+      <!-- ✅ 마지막 다음: 빈 슬라이드(여백) -->
+      <div class="swiper-slide is-spacer"></div>
+
     </div>
   </div>
 </div>
@@ -91,7 +102,7 @@ const frames = Array.from(document.querySelectorAll('.frame'));
    3) 패널 연동: READY + boot + REQUEST_STATE 대응
 ========================= */
 let lastMsg = null;           // {type:'BARA_VIDEO_SELECT', videoId}
-let currentVideoId = null;
+let currentVideoId = null;    // ✅ 중복 방지/상태 응답용
 let panelReady = false;
 let bootTimer = null;
 
@@ -99,7 +110,10 @@ function postTop(msg){
   try { window.top.postMessage(msg, '*'); } catch(e) {}
 }
 
+/* ✅ 중복 notify 방지 + 상태 저장 */
 function notify(videoId){
+  if (!videoId || typeof videoId !== 'string') return;
+  if (videoId === currentVideoId) return; // ✅ 중복 방지
   currentVideoId = videoId;
   lastMsg = { type:'BARA_VIDEO_SELECT', videoId };
   postTop(lastMsg);
@@ -116,9 +130,11 @@ window.addEventListener('message', function(ev){
   }
 
   if (data.type === 'BARA_REQUEST_STATE'){
+    // 현재 상태가 없으면 active slide에서 산출(단, 빈 슬라이드는 제외)
     if (!currentVideoId){
-      const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
-      if (f) currentVideoId = f.dataset.video;
+      const slide = swiper.slides[swiper.activeIndex];
+      const f = slide ? slide.querySelector('.frame') : null;
+      if (f && f.dataset.video) currentVideoId = f.dataset.video;
     }
     if (currentVideoId){
       postTop({ type:'BARA_VIDEO_SELECT', videoId: currentVideoId });
@@ -137,11 +153,14 @@ setTimeout(playerReady, 180);
 window.addEventListener('load', playerReady);
 window.addEventListener('pageshow', playerReady);
 
+/* ✅ boot: lastMsg가 있을 때만 재시도, 그리고 빈 슬라이드면 아무것도 안 함 */
 function boot(){
   panelReady = false;
   if (bootTimer) clearInterval(bootTimer);
 
-  const activeFrame = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
+  // 현재 활성 슬라이드가 frame(영상)인지 확인
+  const slide = swiper.slides[swiper.activeIndex];
+  const activeFrame = slide ? slide.querySelector('.frame') : null;
   const fallbackId =
     (activeFrame && activeFrame.dataset.video) ||
     (frames[0] && frames[0].dataset.video) ||
@@ -152,10 +171,13 @@ function boot(){
     lastMsg = { type:'BARA_VIDEO_SELECT', videoId:fallbackId };
   }
 
+  // lastMsg가 없으면(혹시 모르게) 아무것도 안 함
+  if (!lastMsg) return;
+
   let tries = 0;
   bootTimer = setInterval(function(){
     tries++;
-    if (lastMsg) postTop(lastMsg);
+    postTop(lastMsg);
     if (panelReady || tries > 40) clearInterval(bootTimer);
   }, 50);
 }
@@ -202,15 +224,19 @@ frames.forEach(f=>{
   }, { passive:true });
 });
 
+/* ✅ slideChange: 빈 슬라이드(is-spacer)에서는 notify 안 함 */
 swiper.on('slideChange', ()=>{
-  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
-  if(f) notify(f.dataset.video);
+  const slide = swiper.slides[swiper.activeIndex];
+  const f = slide ? slide.querySelector('.frame') : null;
+  if (!f || !f.dataset.video) return; // ✅ 빈 슬라이드면 패널 유지
+  notify(f.dataset.video);
 });
 
-/* 첫 화면에서도 1회 신호 확보 + 부팅 */
+/* ✅ 첫 화면 상태 1회 + boot */
 setTimeout(function(){
-  const f = swiper.slides[swiper.activeIndex]?.querySelector('.frame');
-  if(f) notify(f.dataset.video);
+  const slide = swiper.slides[swiper.activeIndex];
+  const f = slide ? slide.querySelector('.frame') : null;
+  if(f && f.dataset.video) notify(f.dataset.video);
   boot();
 }, 0);
 
